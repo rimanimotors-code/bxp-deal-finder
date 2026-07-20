@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Password hash generator</title>
+<style>body{background:#0e1117;color:#e8ecf4;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+.b{background:#161b25;border:1px solid #262e40;border-radius:12px;padding:32px;width:420px}
+input{width:100%;padding:11px;border-radius:8px;border:1px solid #262e40;background:#1c2230;color:#e8ecf4;font-size:15px;margin:12px 0}
+code{display:block;background:#0a0d13;padding:12px;border-radius:8px;word-break:break-all;font-size:12px;color:#3fb970;min-height:40px}
+p{color:#8b94a8;font-size:13px}</style></head>
+<body><div class="b">
+<h2>Set your dashboard password</h2>
+<p>Type a new password below, copy the hash, then paste it into <b>docs/index.html</b> as the value of <b>PASSWORD_HASH</b>.</p>
+<input type="text" id="p" placeholder="New password" oninput="go()">
+<code id="out">hash appears here…</code>
+</div>
+<script>
+async function go(){
+  const v = document.getElementById("p").value;
+  if(!v){document.getElementById("out").textContent="hash appears here…";return}
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
+  document.getElementById("out").textContent = [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+</script></body></html>

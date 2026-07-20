@@ -1,0 +1,50 @@
+{
+ "generated": "2026-07-17T00:00:00+00:00",
+ "count": 3,
+ "fixer_count": 2,
+ "budget": {"down_payment_min": 150000, "down_payment_max": 180000, "down_pct": 0.2, "max_purchase": 900000, "stretch_purchase": 1050000},
+ "listings": [
+  {
+   "area": "Encino", "tier": "prime",
+   "address": "SAMPLE — 12345 Example Ave, Encino 91316",
+   "zip": "91316", "price": 849000, "beds": 3, "baths": 2, "sqft": 1650,
+   "lot_sqft": 7200, "year_built": 1958, "ppsf": 515, "dom": 72,
+   "list_date": "2026-05-06", "url": "https://www.realtor.com",
+   "photo": "", "mls": "SAMPLE1", "status": "FOR_SALE",
+   "kw_strong": ["fixer", "as-is"], "kw_weak": ["potential"],
+   "description": "This is SAMPLE data so you can see the dashboard before the first scrape runs. Fixer with great bones, sold as-is. Tons of potential south of Ventura Blvd.",
+   "area_median_ppsf": 720, "ppsf_discount_pct": 28.5, "budget_fit": "fits",
+   "score": 78, "fixer": true, "negotiable": true,
+   "suggested_offer": 764000, "down_needed": 152800,
+   "orig_price": 899000, "price_cut": 50000
+  },
+  {
+   "area": "Woodland Hills", "tier": "prime",
+   "address": "SAMPLE — 6789 Demo Dr, Woodland Hills 91364",
+   "zip": "91364", "price": 925000, "beds": 4, "baths": 2, "sqft": 1900,
+   "lot_sqft": 8900, "year_built": 1962, "ppsf": 487, "dom": 55,
+   "list_date": "2026-05-23", "url": "https://www.realtor.com",
+   "photo": "", "mls": "SAMPLE2", "status": "FOR_SALE",
+   "kw_strong": ["needs work"], "kw_weak": ["original condition", "sweat equity"],
+   "description": "SAMPLE listing. Original condition ranch, needs work throughout. Bring your contractor. Great school district.",
+   "area_median_ppsf": 640, "ppsf_discount_pct": 23.9, "budget_fit": "stretch",
+   "score": 64, "fixer": true, "negotiable": true,
+   "suggested_offer": 838000, "down_needed": 167600,
+   "orig_price": 925000, "price_cut": 0
+  },
+  {
+   "area": "Highland Park", "tier": "value",
+   "address": "SAMPLE — 456 Test St, Highland Park 90042",
+   "zip": "90042", "price": 690000, "beds": 2, "baths": 1, "sqft": 1050,
+   "lot_sqft": 5100, "year_built": 1924, "ppsf": 657, "dom": 21,
+   "list_date": "2026-06-26", "url": "https://www.realtor.com",
+   "photo": "", "mls": "SAMPLE3", "status": "FOR_SALE",
+   "kw_strong": [], "kw_weak": ["opportunity"],
+   "description": "SAMPLE listing. Charming bungalow, opportunity knocks in a hot NELA pocket.",
+   "area_median_ppsf": 705, "ppsf_discount_pct": 6.8, "budget_fit": "fits",
+   "score": 31, "fixer": false, "negotiable": false,
+   "suggested_offer": null, "down_needed": 138000,
+   "orig_price": 690000, "price_cut": 0
+  }
+ ]
+}

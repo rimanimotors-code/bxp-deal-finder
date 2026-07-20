@@ -1,0 +1,38 @@
+name: Daily Deal Scan
+
+on:
+  schedule:
+    - cron: "0 14 * * *"   # 14:00 UTC = 7:00 AM Pacific (6 AM in winter)
+  workflow_dispatch: {}     # lets you run it manually from the Actions tab
+  push:
+    paths:                  # first publish (and any engine change) triggers a scan;
+      - "scraper/**"        # daily bot commits touch only docs/, so no loop
+      - "config.yaml"
+      - "requirements.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scraper/scrape.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "deal-bot"
+          git config user.email "bot@buildxpressdepot.us"
+          git add docs/data.json docs/history.json
+          git diff --cached --quiet || git commit -m "Daily scan $(date -u +%F)"
+          git push

@@ -1,0 +1,103 @@
+# ============================================================
+# BuildXpress Deal Finder - configuration
+# Edit this file to tune areas, budget, keywords, and scoring.
+# ============================================================
+
+# Areas to scan daily. Each is scraped separately via HomeHarvest.
+areas:
+  - name: Encino
+    location: "Encino, Los Angeles, CA"
+    tier: prime          # prime = desired neighborhood / good schools / fast flips
+  - name: Sherman Oaks
+    location: "Sherman Oaks, Los Angeles, CA"
+    tier: prime
+  - name: Tarzana
+    location: "Tarzana, Los Angeles, CA"
+    tier: prime
+  - name: Studio City
+    location: "Studio City, Los Angeles, CA"
+    tier: prime
+  - name: Woodland Hills
+    location: "Woodland Hills, Los Angeles, CA"
+    tier: prime
+  - name: Calabasas
+    location: "Calabasas, CA"
+    tier: prime
+  - name: Porter Ranch
+    location: "Porter Ranch, Los Angeles, CA"
+    tier: prime          # yes - top-rated schools, strong resale velocity
+  - name: Highland Park
+    location: "Highland Park, Los Angeles, CA"
+    tier: value
+  - name: Mid-City
+    location: "Mid-City, Los Angeles, CA"
+    tier: value
+
+# Financing profile (hard money, 20% down)
+budget:
+  down_payment_min: 150000
+  down_payment_max: 180000
+  down_pct: 0.20
+  # => comfortable purchase ceiling = 180000 / 0.20
+  max_purchase: 900000
+  # still show listings up to this price if they look negotiable
+  # (long DOM = room for ~$100K-below-asking cash offers)
+  stretch_purchase: 1050000
+
+# Listings older than this (days on market) are flagged as
+# "negotiable" and get a suggested cash offer below asking.
+negotiation:
+  dom_negotiable: 45     # days on market before we assume seller fatigue
+  max_discount_abs: 100000
+  max_discount_pct: 0.10
+
+# Description keywords that signal a fixer / value-add deal
+keywords:
+  strong:
+    - fixer
+    - "fixer-upper"
+    - "as-is"
+    - "as is"
+    - tlc
+    - "handyman"
+    - "contractor special"
+    - "investor special"
+    - "cash only"
+    - "sold as"
+    - "needs work"
+    - "bring your toolbox"
+    - "value in the land"
+    - probate
+    - "trust sale"
+    - "estate sale"
+    - teardown
+    - "tear down"
+  weak:
+    - opportunity
+    - potential
+    - "original condition"
+    - cosmetic
+    - "make it your own"
+    - "sweat equity"
+    - "priced to sell"
+    - "motivated seller"
+    - "first time on market"
+    - "needs updating"
+    - dated
+
+# Only scan properties listed within this many days
+past_days: 120
+
+# Property types to keep (flips = houses, not condos)
+property_types:
+  - SINGLE_FAMILY
+  - MULTI_FAMILY
+  - TOWNHOMES
+  - LAND
+
+# Scoring weights (must be useful, not perfect - tune over time)
+scoring:
+  w_ppsf: 45        # $/sqft below area median
+  w_dom: 25         # days on market (negotiation leverage)
+  w_keywords: 20    # fixer language in listing description
+  w_budget: 10      # fits the 20%-down budget

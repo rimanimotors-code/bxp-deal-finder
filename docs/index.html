@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>BuildXpress Deal Finder</title>
+<style>
+  :root{
+    --bg:#0e1117; --card:#161b25; --card2:#1c2230; --line:#262e40;
+    --text:#e8ecf4; --muted:#8b94a8; --accent:#f5a623; --green:#3fb970;
+    --red:#e5534b; --blue:#4a9eff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ---------- login ---------- */
+  #login{position:fixed;inset:0;background:var(--bg);z-index:99;display:flex;align-items:center;justify-content:center}
+  .login-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:40px;width:360px;text-align:center}
+  .login-box h1{font-size:22px;margin-bottom:6px}
+  .login-box p{color:var(--muted);margin-bottom:22px;font-size:13px}
+  .login-box input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;margin-bottom:14px}
+  .login-box button{width:100%;padding:12px;border:none;border-radius:8px;background:var(--accent);color:#111;font-weight:700;font-size:15px;cursor:pointer}
+  .login-box button:hover{filter:brightness(1.1)}
+  #loginerr{color:var(--red);font-size:13px;margin-top:10px;display:none}
+  .logo{font-size:34px;margin-bottom:8px}
+
+  /* ---------- layout ---------- */
+  #app{display:none;max-width:1500px;margin:0 auto;padding:24px}
+  header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  header h1{font-size:20px}
+  header h1 span{color:var(--accent)}
+  .updated{color:var(--muted);font-size:12px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .stat .n{font-size:26px;font-weight:800}
+  .stat .l{color:var(--muted);font-size:12px;margin-top:2px}
+
+  .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center}
+  .filters select,.filters input[type=text],.filters input[type=number]{
+    padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:13px}
+  .filters input[type=text]{min-width:220px}
+  .toggle{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;user-select:none;font-size:13px}
+  .toggle.on{border-color:var(--accent);color:var(--accent)}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .deal{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:transform .12s}
+  .deal:hover{transform:translateY(-2px);border-color:#37415c}
+  .deal .img{height:170px;background:#0a0d13 center/cover no-repeat;position:relative}
+  .badge{position:absolute;top:10px;left:10px;padding:4px 9px;border-radius:6px;font-size:11px;font-weight:800}
+  .badge.fixer{background:var(--accent);color:#111}
+  .score-badge{position:absolute;top:10px;right:10px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;border:3px solid}
+  .s-hot{border-color:var(--green);color:var(--green);background:#0e1a13}
+  .s-warm{border-color:var(--accent);color:var(--accent);background:#1c1710}
+  .s-cold{border-color:var(--muted);color:var(--muted);background:#141821}
+  .deal .body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .price-row{display:flex;justify-content:space-between;align-items:baseline}
+  .price{font-size:20px;font-weight:800}
+  .cut{color:var(--green);font-size:12px;font-weight:700}
+  .addr{font-size:13px;color:var(--text)}
+  .meta{color:var(--muted);font-size:12px;display:flex;gap:10px;flex-wrap:wrap}
+  .kws{display:flex;gap:5px;flex-wrap:wrap}
+  .kw{background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:11px;color:var(--accent)}
+  .kw.weak{color:var(--muted)}
+  .offer{background:var(--card2);border-radius:8px;padding:9px 12px;font-size:12.5px;display:flex;justify-content:space-between}
+  .offer b{color:var(--green)}
+  .down{color:var(--muted);font-size:12px}
+  .dom-hot{color:var(--green);font-weight:700}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px 0}
+  .footer{margin-top:26px;color:var(--muted);font-size:11.5px;text-align:center}
+  .fit-over{color:var(--red)} .fit-stretch{color:var(--accent)} .fit-fits{color:var(--green)}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-box">
+    <div class="logo">🏚️→🏡</div>
+    <h1>BuildXpress Deal Finder</h1>
+    <p>Private flip-deal dashboard · buildxpressdepot.us</p>
+    <input type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Sign in</button>
+    <div id="loginerr">Wrong password</div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <h1>🏚️ BuildXpress <span>Deal Finder</span></h1>
+    <div class="updated" id="updated"></div>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters">
+    <select id="fArea"><option value="">All areas</option></select>
+    <select id="fSort">
+      <option value="score">Sort: Deal score</option>
+      <option value="price_asc">Price ↑</option>
+      <option value="price_desc">Price ↓</option>
+      <option value="dom">Days on market</option>
+      <option value="ppsf">$/sqft ↑</option>
+      <option value="cut">Biggest price cut</option>
+    </select>
+    <input type="number" id="fMax" placeholder="Max price $">
+    <div class="toggle" id="tFixer" onclick="toggle(this)">🔨 Fixers only</div>
+    <div class="toggle" id="tNeg" onclick="toggle(this)">💰 Negotiable (45+ DOM)</div>
+    <div class="toggle" id="tBudget" onclick="toggle(this)">✅ Fits my budget</div>
+    <input type="text" id="fSearch" placeholder="Search address / keyword...">
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">
+    Data refreshed daily from public listing sources. Scores &amp; suggested offers are heuristics, not appraisals —
+    always verify condition, comps and ARV before making an offer. Not financial advice.
+  </div>
+</div>
+
+<script>
+/* ================= AUTH ================= */
+// Default password is "password" — CHANGE IT: open hash.html, type your new
+// password, and paste the generated hash here.
+const PASSWORD_HASH = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
+
+async function sha256(str){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function doLogin(){
+  const h = await sha256(document.getElementById("pw").value);
+  if(h === PASSWORD_HASH){
+    sessionStorage.setItem("bx_auth", h);
+    showApp();
+  } else {
+    document.getElementById("loginerr").style.display = "block";
+  }
+}
+function showApp(){
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  loadData();
+}
+if(sessionStorage.getItem("bx_auth") === PASSWORD_HASH) showApp();
+
+/* ================= DATA ================= */
+let DATA = null;
+
+async function loadData(){
+  try{
+    const r = await fetch("data.json?_=" + Date.now());
+    DATA = await r.json();
+  }catch(e){
+    document.getElementById("grid").innerHTML =
+      '<div class="empty">No data yet — run the scraper (or wait for the daily run).</div>';
+    return;
+  }
+  const d = new Date(DATA.generated);
+  document.getElementById("updated").textContent =
+    "Last scan: " + d.toLocaleString("en-US",{timeZone:"America/Los_Angeles"}) + " PT";
+
+  // area filter options
+  const areas = [...new Set(DATA.listings.map(l=>l.area))].sort();
+  const sel = document.getElementById("fArea");
+  areas.forEach(a=>{ const o=document.createElement("option"); o.value=a; o.textContent=a; sel.appendChild(o); });
+
+  render();
+}
+
+function fmt(n){ return n==null ? "—" : "$" + Number(n).toLocaleString(); }
+
+function toggle(el){ el.classList.toggle("on"); render(); }
+document.addEventListener("input", e=>{ if(["fMax","fSearch"].includes(e.target.id)) render(); });
+document.addEventListener("change", e=>{ if(["fArea","fSort"].includes(e.target.id)) render(); });
+
+function render(){
+  if(!DATA) return;
+  const area = document.getElementById("fArea").value;
+  const sort = document.getElementById("fSort").value;
+  const maxP = parseFloat(document.getElementById("fMax").value) || Infinity;
+  const q = document.getElementById("fSearch").value.toLowerCase();
+  const fixOnly = document.getElementById("tFixer").classList.contains("on");
+  const negOnly = document.getElementById("tNeg").classList.contains("on");
+  const budOnly = document.getElementById("tBudget").classList.contains("on");
+
+  let rows = DATA.listings.filter(l =>
+    (!area || l.area === area) &&
+    l.price <= maxP &&
+    (!fixOnly || l.fixer) &&
+    (!negOnly || l.negotiable) &&
+    (!budOnly || l.budget_fit !== "over") &&
+    (!q || (l.address + " " + (l.description||"")).toLowerCase().includes(q))
+  );
+
+  const sorters = {
+    score: (a,b)=>b.score-a.score,
+    price_asc: (a,b)=>a.price-b.price,
+    price_desc: (a,b)=>b.price-a.price,
+    dom: (a,b)=>(b.dom||0)-(a.dom||0),
+    ppsf: (a,b)=>(a.ppsf||9e9)-(b.ppsf||9e9),
+    cut: (a,b)=>(b.price_cut||0)-(a.price_cut||0),
+  };
+  rows.sort(sorters[sort]);
+
+  // stats
+  const s = document.getElementById("stats");
+  const negC = rows.filter(l=>l.negotiable).length;
+  const fixC = rows.filter(l=>l.fixer).length;
+  const inBud = rows.filter(l=>l.budget_fit==="fits").length;
+  s.innerHTML = `
+    <div class="stat"><div class="n">${rows.length}</div><div class="l">Listings shown</div></div>
+    <div class="stat"><div class="n" style="color:var(--accent)">${fixC}</div><div class="l">Fixer signals</div></div>
+    <div class="stat"><div class="n" style="color:var(--green)">${negC}</div><div class="l">Negotiable (45+ DOM)</div></div>
+    <div class="stat"><div class="n" style="color:var(--blue)">${inBud}</div><div class="l">Fit ≤ $${(DATA.budget.max_purchase/1000)}K budget</div></div>`;
+
+  // cards
+  const grid = document.getElementById("grid");
+  if(!rows.length){ grid.innerHTML = '<div class="empty">Nothing matches these filters.</div>'; return; }
+
+  grid.innerHTML = rows.map(l=>{
+    const sc = l.score>=60 ? "s-hot" : l.score>=35 ? "s-warm" : "s-cold";
+    const img = l.photo ? `style="background-image:url('${l.photo}')"` : "";
+    const kws = [
+      ...l.kw_strong.map(k=>`<span class="kw">${k}</span>`),
+      ...l.kw_weak.slice(0,3).map(k=>`<span class="kw weak">${k}</span>`)
+    ].join("");
+    const domCls = (l.dom||0) >= 45 ? "dom-hot" : "";
+    return `
+    <div class="deal">
+      <a href="${l.url}" target="_blank" rel="noopener">
+        <div class="img" ${img}>
+          ${l.fixer ? '<span class="badge fixer">🔨 FIXER</span>' : ''}
+          <div class="score-badge ${sc}">${l.score}</div>
+        </div>
+      </a>
+      <div class="body">
+        <div class="price-row">
+          <span class="price">${fmt(l.price)}</span>
+          ${l.price_cut ? `<span class="cut">▼ ${fmt(l.price_cut)} cut</span>` : ""}
+        </div>
+        <div class="addr"><a href="${l.url}" target="_blank" rel="noopener">${l.address}</a></div>
+        <div class="meta">
+          <span>${l.beds ?? "—"} bd</span><span>${l.baths ?? "—"} ba</span>
+          <span>${l.sqft ? l.sqft.toLocaleString()+" sqft" : "—"}</span>
+          <span>${l.ppsf ? "$"+l.ppsf+"/sqft" : ""}${l.ppsf_discount_pct ? ` <b style="color:var(--green)">(${l.ppsf_discount_pct}% under area)</b>` : ""}</span>
+        </div>
+        <div class="meta">
+          <span class="${domCls}">⏱ ${l.dom ?? "?"} days on market</span>
+          <span>${l.area}</span>
+          <span class="fit-${l.budget_fit}">${l.budget_fit === "fits" ? "✅ in budget" : l.budget_fit === "stretch" ? "⚠ stretch" : "over budget"}</span>
+          ${(l.sources||[]).map(s=>`<span class="kw weak">${s}</span>`).join("")}
+        </div>
+        ${kws ? `<div class="kws">${kws}</div>` : ""}
+        ${l.suggested_offer ? `
+          <div class="offer">
+            <span>Suggested cash offer: <b>${fmt(l.suggested_offer)}</b></span>
+            <span class="down">${fmt(l.down_needed)} down (20%)</span>
+          </div>` : `<div class="down">20% down: ${fmt(l.down_needed)}</div>`}
+      </div>
+    </div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>
