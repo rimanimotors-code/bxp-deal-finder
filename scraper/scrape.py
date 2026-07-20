@@ -73,6 +73,25 @@ def norm_addr(addr):
     return re.sub(r"\s+", " ", a).strip()
 
 
+# Address tokens that mean an attached / individually-deeded unit (condo, etc.)
+UNIT_RE = re.compile(r"(?:\bunit\b|\bapt\b|\bste\b|\bspc\b|\bspace\b|#\s*\w)", re.I)
+
+
+def is_attached(rec, cfg):
+    """True if this listing is a condo/co-op/townhome/mobile — not a flip."""
+    excl = [x.upper() for x in cfg.get("exclude_types", [])]
+    pt = str(rec.get("ptype", "")).upper()
+    if any(x in pt for x in excl):
+        return True
+    if cfg.get("exclude_units", True) and UNIT_RE.search(rec.get("address", "")):
+        return True
+    hoa = rec.get("hoa")
+    hoa_max = cfg.get("hoa_max", 0)
+    if hoa and hoa_max and hoa > hoa_max:
+        return True
+    return False
+
+
 # ----------------------------------------------------------------------
 # Source 1: Realtor.com via HomeHarvest (primary - has descriptions)
 # ----------------------------------------------------------------------
@@ -97,6 +116,7 @@ def fetch_realtor(area, cfg):
         allowed = cfg.get("property_types", [])
         if allowed and style and not any(a in style for a in allowed):
             continue
+        hoa = safe_num(first_col(r, "hoa_fee", "hoa"))
         sqft = safe_num(first_col(r, "sqft", "square_feet"))
         ppsf = safe_num(first_col(r, "price_per_sqft"))
         if ppsf is None and sqft:
@@ -123,6 +143,8 @@ def fetch_realtor(area, cfg):
             "photo": first_col(r, "primary_photo", "photo") or "",
             "mls": str(first_col(r, "mls_id", "mls") or ""),
             "status": str(first_col(r, "status") or ""),
+            "ptype": style,
+            "hoa": hoa,
             "description": str(first_col(r, "text", "description") or "")[:600],
         })
     print(f"  [{area['name']}] realtor: {len(out)}")
@@ -152,8 +174,10 @@ def fetch_redfin(area, cfg):
         data = _redfin_json(
             "https://www.redfin.com/stingray/api/gis",
             {
+                # uipt 1=house 2=condo 3=townhouse 4=multi 5=land 6=other
+                # -> keep houses, multi and land only (no condo/townhouse)
                 "al": 1, "region_id": rid, "region_type": rtype,
-                "status": 9, "uipt": "1,2,3,4", "sf": "1,2,3,5,6,7",
+                "status": 9, "uipt": "1,4,5", "sf": "1,2,3,5,6,7",
                 "num_homes": 400, "v": 8,
             },
         )
@@ -168,10 +192,16 @@ def fetch_redfin(area, cfg):
             return v.get("value")
         return v
 
+    RF_TYPES = {1: "SINGLE_FAMILY", 2: "CONDO", 3: "TOWNHOUSE",
+                4: "MULTI_FAMILY", 5: "LAND", 6: "OTHER", 13: "CO-OP"}
     for h in homes:
         price = safe_num(val(h, "price"))
         if not price or price < 100000:
             continue
+        try:
+            rf_ptype = RF_TYPES.get(int(val(h, "propertyType") or 0), "")
+        except (TypeError, ValueError):
+            rf_ptype = ""
         sqft = safe_num(val(h, "sqFt"))
         street = str(val(h, "streetLine") or "")
         city = h.get("city") or ""
@@ -195,6 +225,8 @@ def fetch_redfin(area, cfg):
             "photo": "",
             "mls": str(val(h, "mlsId") or ""),
             "status": "FOR_SALE",
+            "ptype": rf_ptype,
+            "hoa": safe_num(val(h, "hoa")),
             "description": "",
         })
     print(f"  [{area['name']}] redfin: {len(out)}")
@@ -256,6 +288,8 @@ def fetch_zillow(area, cfg):
             "photo": h.get("imgSrc") or "",
             "mls": "",
             "status": "FOR_SALE",
+            "ptype": str(info.get("homeType") or "").upper(),
+            "hoa": safe_num(info.get("hoa")),
             "description": str(h.get("flexFieldText") or ""),
         })
     print(f"  [{area['name']}] zillow: {len(out)}")
@@ -394,6 +428,11 @@ def main():
     if not raw:
         print("No listings from any source - keeping previous data.json", file=sys.stderr)
         sys.exit(1)
+
+    # Drop condos / co-ops / townhomes / mobile / any attached unit
+    before = len(raw)
+    raw = [r for r in raw if not is_attached(r, cfg)]
+    print(f"Filtered out {before - len(raw)} attached/condo listings")
 
     listings = merge_sources(raw)
     listings = score_listings(listings, cfg)

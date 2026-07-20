@@ -88,12 +88,27 @@ keywords:
 # Only scan properties listed within this many days
 past_days: 120
 
-# Property types to keep (flips = houses, not condos)
+# Property types to keep (flips = detached houses / land only)
 property_types:
   - SINGLE_FAMILY
   - MULTI_FAMILY
-  - TOWNHOMES
   - LAND
+# HARD EXCLUDE — never show these, no matter how cheap they look.
+# Condos, co-ops, apartments, townhomes and mobile/manufactured homes
+# are not flip candidates. Anything with a unit number (Unit/Apt/#) or
+# an HOA above the threshold below is treated as attached and dropped.
+exclude_types:
+  - CONDO
+  - CO-OP
+  - COOP
+  - CO_OP
+  - APARTMENT
+  - TOWNHOME
+  - TOWNHOUSE
+  - MOBILE
+  - MANUFACTURED
+exclude_units: true       # drop addresses containing Unit / Apt / Ste / #
+hoa_max: 250              # $/mo above this = treat as condo/townhome, drop
 
 # Scoring weights (must be useful, not perfect - tune over time)
 scoring:
